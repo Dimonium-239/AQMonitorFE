@@ -3,9 +3,18 @@ import useAirMeasurements from '../../hooks/useAirMeasurements';
 import Filters from './Filters';
 import ChartView from './ChartView';
 import MeasurementsTable from './MeasurementsTable';
+import {Pagination} from "./Pagination.jsx";
 
 export default function AirMeasurementsDashboard() {
-    const { measurements, filtered, setFiltered, allParams } = useAirMeasurements();
+    const { measurements,
+        filtered,
+        setFiltered,
+        allParams,
+        pageNum,
+        setPageNum,
+        pageSize,
+        setPageSize,
+        totalPages} = useAirMeasurements();
     const [startDate, setStartDate] = useState('');
     const [endDate, setEndDate] = useState('');
     const [selectedSeries, setSelectedSeries] = useState([]);
@@ -18,7 +27,7 @@ export default function AirMeasurementsDashboard() {
             setEndDate(now.toISOString().split('T')[0]);
             setSelectedSeries(allParams);
         }
-    }, [measurements]);
+    }, [measurements, allParams]);
 
     const handleFilter = (s, e) => {
         if (!s || !e) return;
@@ -66,7 +75,16 @@ export default function AirMeasurementsDashboard() {
             />
 
             <ChartView data={groupedData} selectedSeries={selectedSeries} />
-            <MeasurementsTable filtered={filtered} />
+            <div>
+                <MeasurementsTable filtered={filtered} />
+                <Pagination
+                    pageNum={pageNum}
+                    setPageNum={setPageNum}
+                    pageSize={pageSize}
+                    setPageSize={setPageSize}
+                    total={totalPages}
+                />
+            </div>
         </div>
     );
 }
