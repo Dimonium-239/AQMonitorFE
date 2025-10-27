@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import useAirMeasurements from '../../hooks/useAirMeasurements';
 import Filters from './Filters';
 import ChartView from './ChartView';
@@ -8,38 +8,34 @@ import {Pagination} from "./Pagination.jsx";
 export default function AirMeasurementsDashboard() {
     const { measurements,
         filtered,
-        setFiltered,
+        chartData,
         allParams,
         pageNum,
         setPageNum,
         pageSize,
         setPageSize,
-        totalPages} = useAirMeasurements();
-    const [startDate, setStartDate] = useState('');
-    const [endDate, setEndDate] = useState('');
-    const [selectedSeries, setSelectedSeries] = useState([]);
+        totalPages,
+        startDate,
+        setStartDate,
+        endDate,
+        setEndDate,
+        selectedSeries,
+        setSelectedSeries} = useAirMeasurements();
 
     useEffect(() => {
-        if (measurements.length > 0) {
+        if (measurements.length > 0 && !startDate && !endDate && selectedSeries.length === 0) {
             const now = new Date();
             const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
             setStartDate(weekAgo.toISOString().split('T')[0]);
             setEndDate(now.toISOString().split('T')[0]);
             setSelectedSeries(allParams);
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [measurements, allParams]);
 
     const handleFilter = (s, e) => {
-        if (!s || !e) return;
-        const start = new Date(s);
-        start.setHours(0, 0, 0, 0);
-        const end = new Date(e);
-        end.setHours(23, 59, 59, 999);
-        const filteredData = measurements.filter(m => {
-            const t = new Date(m.timestamp);
-            return t >= start && t <= end;
-        });
-        setFiltered(filteredData);
+        setStartDate(s);
+        setEndDate(e);
     };
 
     const toggleSeries = (param) => {
@@ -49,15 +45,6 @@ export default function AirMeasurementsDashboard() {
                 : [...prev, param]
         );
     };
-
-    const groupedData = Object.values(
-        filtered.reduce((acc, m) => {
-            const t = new Date(m.timestamp).toISOString();
-            if (!acc[t]) acc[t] = { timestamp: t };
-            acc[t][m.parameter] = m.value;
-            return acc;
-        }, {})
-    );
 
     return (
         <div style={{ padding: '20px', fontFamily: 'Arial, sans-serif' }}>
@@ -74,7 +61,7 @@ export default function AirMeasurementsDashboard() {
                 toggleSeries={toggleSeries}
             />
 
-            <ChartView data={groupedData} selectedSeries={selectedSeries} />
+            <ChartView data={chartData} selectedSeries={selectedSeries} />
             <div>
                 <MeasurementsTable filtered={filtered} />
                 <Pagination
