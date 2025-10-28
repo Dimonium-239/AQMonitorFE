@@ -12,7 +12,6 @@ function pivotData(data) {
         if (!grouped[t]) grouped[t] = { timestamp: t };
         grouped[t][item.parameter] = item.value;
     });
-
     return Object.values(grouped).sort((a, b) => a.timestamp - b.timestamp);
 }
 
@@ -30,20 +29,32 @@ function stringToColor(str) {
 
 export default function ChartView({ data, selectedSeries }) {
     const chartData = pivotData(data);
-    console.log("--------------")
-    console.log(chartData);
-    console.log(selectedSeries);
+    // Derive unique parameters from the data if none selected
+    const allParams =
+        selectedSeries.length > 0
+            ? selectedSeries
+            : Object.keys(chartData[0] || {}).filter(k => k !== "timestamp");
+
     return (
-        <div style={{ width: '100%', height: '300px', marginBottom: '20px' }}>
+        <div style={{ width: "100%", height: "300px", marginBottom: "20px" }}>
             <ResponsiveContainer>
                 <LineChart data={chartData}>
                     <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="timestamp" tickFormatter={t => new Date(t).toLocaleTimeString()} />
+                    <XAxis
+                        dataKey="timestamp"
+                        tickFormatter={t => new Date(t).toLocaleTimeString()}
+                    />
                     <YAxis />
                     <Tooltip />
                     <Legend />
-                    {selectedSeries.map(param => (
-                        <Line key={param} type="monotone" dataKey={param} stroke={stringToColor(param)} dot={true} />
+                    {allParams.map(param => (
+                        <Line
+                            key={param}
+                            type="monotone"
+                            dataKey={param}
+                            stroke={stringToColor(param)}
+                            dot={true}
+                        />
                     ))}
                 </LineChart>
             </ResponsiveContainer>

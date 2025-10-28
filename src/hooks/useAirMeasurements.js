@@ -101,5 +101,7 @@ export default function useAirMeasurements(initialPage = 1, initialSize = 10) {
         setEndDate,
         selectedSeries,
         setSelectedSeries,
+        setMeasurements,
+        setChartData
     };
 }

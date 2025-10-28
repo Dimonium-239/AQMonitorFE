@@ -1,9 +1,10 @@
-import React, { useEffect } from 'react';
+import React, {useEffect} from 'react';
 import useAirMeasurements from '../../hooks/useAirMeasurements';
 import Filters from './Filters';
 import ChartView from './ChartView';
 import MeasurementsTable from './MeasurementsTable';
 import {Pagination} from "./Pagination.jsx";
+import AddMeasurementForm from "./AddMeasurementForm.jsx";
 
 export default function AirMeasurementsDashboard() {
     const { measurements,
@@ -20,7 +21,9 @@ export default function AirMeasurementsDashboard() {
         endDate,
         setEndDate,
         selectedSeries,
-        setSelectedSeries} = useAirMeasurements();
+        setSelectedSeries,
+        setMeasurements,
+        setChartData} = useAirMeasurements();
 
     useEffect(() => {
         if (measurements.length > 0 && !startDate && !endDate && selectedSeries.length === 0) {
@@ -46,6 +49,12 @@ export default function AirMeasurementsDashboard() {
         );
     };
 
+
+    const handleAdded = (newMeasurement) => {
+        setChartData((prev) => [...prev, newMeasurement]);
+        setMeasurements((prev) => [...prev, newMeasurement]);
+    };
+
     return (
         <div style={{ padding: '20px', fontFamily: 'Arial, sans-serif' }}>
             <h2>Air Quality Dashboard</h2>
@@ -63,6 +72,7 @@ export default function AirMeasurementsDashboard() {
 
             <ChartView data={chartData} selectedSeries={selectedSeries} />
             <div>
+                <AddMeasurementForm onAdded={handleAdded} />
                 <MeasurementsTable filtered={filtered} />
                 <Pagination
                     pageNum={pageNum}
