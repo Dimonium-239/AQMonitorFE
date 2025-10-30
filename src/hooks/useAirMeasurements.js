@@ -1,9 +1,8 @@
 import {useState, useEffect, useMemo} from 'react';
 
-
 export default function useAirMeasurements(initialPage = 1, initialSize = 10) {
     const [measurements, setMeasurements] = useState([]);
-    const [chartData, setChartData] = useState([]); // ✅ new state for chart
+    const [chartData, setChartData] = useState([]);
     const [pageNum, setPageNum] = useState(initialPage);
     const [pageSize, setPageSize] = useState(initialSize);
     const [totalPages, setTotalPages] = useState(1);
@@ -11,59 +10,56 @@ export default function useAirMeasurements(initialPage = 1, initialSize = 10) {
     const [endDate, setEndDate] = useState('');
     const [selectedSeries, setSelectedSeries] = useState([]);
     const [allParams, setAllParams] = useState([]);
+    const [sortBy, setSortBy] = useState(["timestamp:asc"]); // multi-sort support
 
     useEffect(() => {
         const maxPages = Math.max(1, totalPages);
         if (pageNum > maxPages) setPageNum(maxPages);
     }, [pageNum, pageSize, totalPages]);
 
+    // Fetch chart data (main backend endpoint)
     useEffect(() => {
         let isMounted = true;
-        const params = new URLSearchParams({
-            page: pageNum,
-            page_size: pageSize
-        });
+        const params = new URLSearchParams();
 
-        const chartParams = new URLSearchParams();
-
-        if (startDate){
-            params.append("startDate", startDate);
-            chartParams.append("startDate", startDate);
-        }
-        if (endDate) {
-            params.append("endDate", endDate);
-            chartParams.append("endDate", endDate);
-        }
+        if (startDate) params.append("start_date", startDate);
+        if (endDate) params.append("end_date", endDate);
         if (selectedSeries.length > 0) {
-            selectedSeries.forEach(e => params.append("parameter", e));
-            selectedSeries.forEach(e => chartParams.append("parameter", e));
+            selectedSeries.forEach(p => params.append("parameter", p));
+        }
+        if (sortBy.length > 0) {
+            sortBy.forEach(s => params.append("sort_by", s));
         }
 
-        const measurementsUrl = `https://aqmonitor.onrender.com/api/air/measurements/persisted?${params.toString()}`;
-        const chartUrl = `https://aqmonitor.onrender.com/api/air/measurements/chart-data?${chartParams.toString()}`;
-        console.log(measurementsUrl);
-        console.log(chartUrl);
-
-        fetch(measurementsUrl)
-            .then(res => res.json())
-            .then(data => {
-                if (!isMounted) return;
-                setMeasurements(data.items || []);
-                setTotalPages(data.total || 1);
-            })
-            .catch(console.error);
+        const chartUrl = `https://aqmonitor.onrender.com/api/air/measurements/chart-data?${params.toString()}`;
+        console.log("Fetching:", chartUrl);
 
         fetch(chartUrl)
             .then(res => res.json())
             .then(data => {
                 if (!isMounted) return;
-                setChartData(data || []); // assume backend returns array for chart
+                setChartData(data || []);
+
+                // FE pagination after receiving data
+                const total = data.length;
+                const pages = Math.ceil(total / pageSize);
+                setTotalPages(pages);
+                const startIdx = (pageNum - 1) * pageSize;
+                const endIdx = startIdx + pageSize;
+                setMeasurements(data.slice(startIdx, endIdx));
             })
             .catch(console.error);
 
         return () => { isMounted = false; };
-    }, [pageNum, pageSize, startDate, endDate, selectedSeries]);
+    }, [pageNum, pageSize, startDate, endDate, selectedSeries, sortBy]);
 
+    // Extract available parameters dynamically
+    useEffect(() => {
+        const paramsFromData = new Set(chartData.map(m => m.parameter));
+        setAllParams(prev => [...new Set([...prev, ...paramsFromData])]);
+    }, [chartData]);
+
+    // Filter by date locally (optional — if needed)
     const filtered = useMemo(() => {
         if (!startDate || !endDate) return measurements;
         const start = new Date(startDate);
@@ -76,20 +72,11 @@ export default function useAirMeasurements(initialPage = 1, initialSize = 10) {
         });
     }, [measurements, startDate, endDate]);
 
-
-    useEffect(() => {
-        const paramsFromMeasurements = new Set(measurements.map(m => m.parameter))
-        setAllParams(prev => {
-            return [...new Set([...prev, ...paramsFromMeasurements])];
-        });
-    }, [measurements]);
-
     return {
         measurements,
         filtered,
         chartData,
         allParams,
-        setAllParams,
         pageNum,
         setPageNum,
         pageSize,
@@ -101,7 +88,9 @@ export default function useAirMeasurements(initialPage = 1, initialSize = 10) {
         setEndDate,
         selectedSeries,
         setSelectedSeries,
-        setMeasurements,
-        setChartData
+        sortBy,
+        setSortBy,
+        setChartData,
+        setMeasurements
     };
 }

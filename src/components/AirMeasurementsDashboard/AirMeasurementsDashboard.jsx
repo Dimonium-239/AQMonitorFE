@@ -1,21 +1,16 @@
-import React, {useEffect} from 'react';
-import useAirMeasurements from '../../hooks/useAirMeasurements';
-import Filters from './Filters';
-import ChartView from './ChartView';
-import MeasurementsTable from './MeasurementsTable';
-import {Pagination} from "./Pagination.jsx";
-import AddMeasurementForm from "./AddMeasurementForm.jsx";
+import React, { useEffect } from "react";
+import Filters from "./Filters";
+import ChartView from "./ChartView";
+import AddMeasurementForm from "./AddMeasurementForm";
+import MeasurementsTable from "./MeasurementsTable";
+import useAirMeasurements from "../../hooks/useAirMeasurements.js";
 
 export default function AirMeasurementsDashboard() {
-    const { measurements,
+    const {
+        measurements,
         filtered,
         chartData,
         allParams,
-        pageNum,
-        setPageNum,
-        pageSize,
-        setPageSize,
-        totalPages,
         startDate,
         setStartDate,
         endDate,
@@ -23,8 +18,10 @@ export default function AirMeasurementsDashboard() {
         selectedSeries,
         setSelectedSeries,
         setMeasurements,
-        setChartData} = useAirMeasurements();
+        setChartData
+    } = useAirMeasurements();
 
+    // Initialize default date range and series on first load
     useEffect(() => {
         if (measurements.length > 0 && !startDate && !endDate && selectedSeries.length === 0) {
             const now = new Date();
@@ -49,7 +46,6 @@ export default function AirMeasurementsDashboard() {
         );
     };
 
-
     const handleAdded = (newMeasurement) => {
         setChartData((prev) => [...prev, newMeasurement]);
         setMeasurements((prev) => [...prev, newMeasurement]);
@@ -67,20 +63,11 @@ export default function AirMeasurementsDashboard() {
                 handleFilter={handleFilter}
                 allParams={allParams}
                 selectedSeries={selectedSeries}
-                toggleSeries={toggleSeries}
-            />
-
+                toggleSeries={toggleSeries}/>
             <ChartView data={chartData} selectedSeries={selectedSeries} />
-            <div>
+            <div style={{ marginTop: "20px" }}>
                 <AddMeasurementForm onAdded={handleAdded} />
                 <MeasurementsTable filtered={filtered} />
-                <Pagination
-                    pageNum={pageNum}
-                    setPageNum={setPageNum}
-                    pageSize={pageSize}
-                    setPageSize={setPageSize}
-                    total={totalPages}
-                />
             </div>
         </div>
     );

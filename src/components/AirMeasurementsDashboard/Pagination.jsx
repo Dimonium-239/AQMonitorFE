@@ -1,6 +1,6 @@
-export function Pagination({ pageNum, setPageNum, pageSize, setPageSize, total }) {
+export function Pagination({ pageNum, setPageNum, pageSize, setPageSize, totalItems, setTotalItems }) {
     const pageOptions = [5, 10, 15, 25];
-    const totalPages = Math.ceil(total / pageSize);
+    const totalPages = Math.ceil(totalItems / pageSize);
 
     const getPages = () => {
         if (totalPages <= 3) {
@@ -87,7 +87,12 @@ export function Pagination({ pageNum, setPageNum, pageSize, setPageSize, total }
             {/* Page size dropdown */}
             <select
                 value={pageSize}
-                onChange={(e) => setPageSize(Number(e.target.value))}
+                onChange={(e) => {
+                    const newSize = Number(e.target.value);
+                    setPageSize(newSize);
+                    setPageNum(1); // reset to first page
+                    setTotalItems(Math.max(1, Math.ceil( totalPages / newSize)))
+                }}
                 style={{ marginLeft: '16px', padding: '6px', borderRadius: '4px', border: '1px solid #ccc' }}
             >
                 {pageOptions.map(opt => <option key={opt} value={opt}>{opt}</option>)}
