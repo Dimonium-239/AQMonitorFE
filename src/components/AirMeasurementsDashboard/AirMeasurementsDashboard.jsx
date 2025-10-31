@@ -18,7 +18,9 @@ export default function AirMeasurementsDashboard() {
         selectedSeries,
         setSelectedSeries,
         setMeasurements,
-        setChartData
+        setChartData,
+        totalItems,
+        setTotalItems
     } = useAirMeasurements();
 
     // Initialize default date range and series on first load
@@ -34,8 +36,8 @@ export default function AirMeasurementsDashboard() {
     }, [measurements, allParams]);
 
     const handleFilter = (s, e) => {
-        setStartDate(s);
-        setEndDate(e);
+        setStartDate(s.toISOString().split('T')[0]);
+        setEndDate(e.toISOString().split('T')[0]);
     };
 
     const toggleSeries = (param) => {
@@ -67,7 +69,11 @@ export default function AirMeasurementsDashboard() {
             <ChartView data={chartData} selectedSeries={selectedSeries} />
             <div style={{ marginTop: "20px" }}>
                 <AddMeasurementForm onAdded={handleAdded} />
-                <MeasurementsTable filtered={filtered} />
+                <MeasurementsTable
+                    filtered={filtered}
+                    totalItems={totalItems}
+                    setTotalItems={setTotalItems}
+                />
             </div>
         </div>
     );

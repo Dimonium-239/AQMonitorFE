@@ -11,6 +11,7 @@ export default function useAirMeasurements(initialPage = 1, initialSize = 10) {
     const [selectedSeries, setSelectedSeries] = useState([]);
     const [allParams, setAllParams] = useState([]);
     const [sortBy, setSortBy] = useState(["timestamp:asc"]); // multi-sort support
+    const [totalItems, setTotalItems] = useState(0);
 
     useEffect(() => {
         const maxPages = Math.max(1, totalPages);
@@ -40,13 +41,11 @@ export default function useAirMeasurements(initialPage = 1, initialSize = 10) {
                 if (!isMounted) return;
                 setChartData(data || []);
 
-                // FE pagination after receiving data
                 const total = data.length;
+                setTotalItems(total);
                 const pages = Math.ceil(total / pageSize);
                 setTotalPages(pages);
-                const startIdx = (pageNum - 1) * pageSize;
-                const endIdx = startIdx + pageSize;
-                setMeasurements(data.slice(startIdx, endIdx));
+                setMeasurements(data);
             })
             .catch(console.error);
 
@@ -71,7 +70,6 @@ export default function useAirMeasurements(initialPage = 1, initialSize = 10) {
             return t >= start && t <= end;
         });
     }, [measurements, startDate, endDate]);
-
     return {
         measurements,
         filtered,
@@ -91,6 +89,8 @@ export default function useAirMeasurements(initialPage = 1, initialSize = 10) {
         sortBy,
         setSortBy,
         setChartData,
-        setMeasurements
+        setMeasurements,
+        totalItems,
+        setTotalItems
     };
 }

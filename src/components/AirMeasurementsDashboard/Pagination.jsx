@@ -1,4 +1,4 @@
-export function Pagination({ pageNum, setPageNum, pageSize, setPageSize, totalItems, setTotalItems }) {
+export function Pagination({ pageNum, setPageNum, pageSize, setPageSize, totalItems }) {
     const pageOptions = [5, 10, 15, 25];
     const totalPages = Math.ceil(totalItems / pageSize);
 
@@ -91,7 +91,6 @@ export function Pagination({ pageNum, setPageNum, pageSize, setPageSize, totalIt
                     const newSize = Number(e.target.value);
                     setPageSize(newSize);
                     setPageNum(1); // reset to first page
-                    setTotalItems(Math.max(1, Math.ceil( totalPages / newSize)))
                 }}
                 style={{ marginLeft: '16px', padding: '6px', borderRadius: '4px', border: '1px solid #ccc' }}
             >
