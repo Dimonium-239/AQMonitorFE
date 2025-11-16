@@ -83,7 +83,7 @@ export default function AddMeasurementForm({ onAdded }) {
     };
 
     return (
-        <div style={{ marginBottom: "25px" }}>
+        <div className={"no-print"} style={{ marginBottom: "25px" }}>
             <form
                 onSubmit={handleSubmit}
                 style={{

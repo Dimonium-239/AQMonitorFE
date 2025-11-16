@@ -66,3 +66,26 @@ button:focus-visible {
     background-color: #f9f9f9;
   }
 }
+/* index.css (globalny) */
+.no-print {
+    /* default for screen */
+    display: block;
+}
+
+/* print */
+@media print {
+    .no-print {
+        display: none !important;
+    }
+
+    /* opcjonalnie: upewnij się, że główne treści są szerokie */
+    .print-full-width {
+        width: 100% !important;
+    }
+
+    body {
+        background: white !important;
+        -webkit-print-color-adjust: exact;
+    }
+}
+

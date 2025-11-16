@@ -76,7 +76,7 @@ export default function MeasurementsTable({ filtered, totalItems, setTotalItems 
 
     return (
         <div>
-            <table style={tableStyle}>
+            <table className={"print-full-width"} style={tableStyle}>
                 <thead>
                 <tr>
                     <th style={headerStyle} onClick={() => handleSort("city")}>
@@ -114,7 +114,7 @@ export default function MeasurementsTable({ filtered, totalItems, setTotalItems 
                 </tbody>
             </table>
 
-            <Pagination
+            <Pagination class="no-print"
                 pageNum={pageNum}
                 setPageNum={setPageNum}
                 pageSize={pageSize}

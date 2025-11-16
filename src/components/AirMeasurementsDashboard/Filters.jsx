@@ -24,7 +24,7 @@ export default function Filters({
     };
 
     return (
-        <div style={{ marginBottom: '10px' }}>
+        <div className={"no-print"} style={{ marginBottom: '10px' }}>
             <div style={{ marginBottom: '10px' }}>
             <DateRangeController start={toStartOfDay(startDate)} end={toEndOfDay(endDate)} setStart={setStartDate} setEnd={setEndDate} loading={loading} error={error} />
 

@@ -36,7 +36,7 @@ export function Pagination({ pageNum, setPageNum, pageSize, setPageSize, totalIt
     });
 
     return (
-        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '16px' }}>
+        <div className={"no-print"} style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '16px' }}>
             {/* First page */}
             <button
                 style={buttonStyle(false, pageNum === 1)}
