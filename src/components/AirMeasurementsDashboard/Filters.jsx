@@ -1,17 +1,18 @@
 import React from 'react';
 import DateRangeController from "./DateRangeController.jsx";
+import {ALL_PARAMETERS} from "../../utils.js";
 
 export default function Filters({
                                     startDate,
                                     endDate,
                                     setStartDate,
                                     setEndDate,
-                                    allParams,
                                     selectedSeries,
                                     toggleSeries,
                                     loading,
                                     error
                                 }) {
+
     const toStartOfDay = (dateStr) => {
         if (!dateStr) return null;
         return new Date(dateStr);
@@ -29,7 +30,7 @@ export default function Filters({
 
             <div>
                 <span>Show series:</span>
-                {allParams.map(param => (
+                {ALL_PARAMETERS.map(param => (
                     <label key={param} style={{ marginLeft: '10px' }}>
                         <input
                             type="checkbox"

@@ -1,31 +1,23 @@
 import { useState, useEffect, useMemo } from "react";
+import {ALL_PARAMETERS} from "../utils.js";
 
 export default function useAirMeasurements(startDate, endDate, refreshKey, {
     initialPage = 1,
     initialSize = 10
 } = {}) {
 
-    // Pagination
     const [pageNum, setPageNum] = useState(initialPage);
     const [pageSize, setPageSize] = useState(initialSize);
-
-    // Data
     const [rawData, setRawData] = useState([]);
     const [chartData, setChartData] = useState([]);
-
-    // Filters
-    const [selectedSeries, setSelectedSeries] = useState([]);
-    const [allParams, setAllParams] = useState([]);
+    const [selectedSeries, setSelectedSeries] = useState(ALL_PARAMETERS);
     const [sortBy, setSortBy] = useState(["timestamp:asc"]);
-
-    // UI state
     const [totalItems, setTotalItems] = useState(0);
     const [totalPages, setTotalPages] = useState(1);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
 
 
-    // MAIN FETCH
     useEffect(() => {
         let isMounted = true;
 
@@ -70,26 +62,16 @@ export default function useAirMeasurements(startDate, endDate, refreshKey, {
         selectedSeries,
         sortBy,
         pageSize,
-        refreshKey // ← crucial
+        refreshKey
     ]);
 
 
-    // ENFORCE VALID PAGE NUMBER
     useEffect(() => {
         if (pageNum > totalPages) {
             setPageNum(totalPages);
         }
     }, [pageNum, totalPages]);
 
-
-    // EXTRACT PARAMETER LIST
-    useEffect(() => {
-        const params = new Set(rawData.map(m => m.parameter));
-        setAllParams([...params]);
-    }, [rawData]);
-
-
-    // LOCAL FILTERING (based on date)
     const filtered = useMemo(() => {
         if (!startDate || !endDate) return rawData;
 
@@ -107,27 +89,17 @@ export default function useAirMeasurements(startDate, endDate, refreshKey, {
 
 
     return {
-        // data
         chartData,
         filtered,
-
-        // parameters
-        allParams,
         selectedSeries,
         setSelectedSeries,
-
-        // pagination
         pageNum,
         setPageNum,
         pageSize,
         setPageSize,
         totalPages,
-
-        // sorting
         sortBy,
         setSortBy,
-
-        // UI state
         totalItems,
         setTotalItems,
         loading,

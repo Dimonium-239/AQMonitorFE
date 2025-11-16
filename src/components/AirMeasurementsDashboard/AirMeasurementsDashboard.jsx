@@ -1,14 +1,14 @@
-import {formatDateInput} from "../../dateUtils.js";
+import {ALL_PARAMETERS, formatDateInput} from "../../utils.js";
 import {useMemo, useState} from "react";
 import useAirMeasurements from "../../hooks/useAirMeasurements.js";
 import Filters from "./Filters.jsx";
 import ChartView from "./ChartView.jsx";
-import RefreshButton from "./ReFetchButton.jsx";
+import ReFetchButton from "./ReFetchButton.jsx";
 import AddMeasurementForm from "./AddMeasurementForm.jsx";
 import MeasurementsTable from "./MeasurementsTable.jsx";
 
 export default function AirMeasurementsDashboard() {
-    const [refreshKey, setRefreshKey] = useState(0);
+    const [refreshKey, setRefreshKey] = useState(true);
 
     const { nowNorm, pastNorm } = useMemo(() => {
         const now = new Date();
@@ -27,7 +27,6 @@ export default function AirMeasurementsDashboard() {
     const {
         filtered,
         chartData,
-        allParams,
         selectedSeries,
         setSelectedSeries,
         totalItems,
@@ -37,15 +36,17 @@ export default function AirMeasurementsDashboard() {
     } = useAirMeasurements(startDate, endDate, refreshKey);
 
     const handleAddMeasurement = () => {
-        setRefreshKey(k => k + 1); // trigger re-fetch
+        setRefreshKey(k => !k);
     };
 
     const toggleSeries = (param) => {
-        setSelectedSeries(prev =>
-            prev.includes(param)
+        setSelectedSeries(prev => {
+            const newSelected = prev.includes(param)
                 ? prev.filter(s => s !== param)
-                : [...prev, param]
-        );
+                : [...prev, param];
+
+            return newSelected.length === 0 ? ALL_PARAMETERS : newSelected;
+        });
     };
 
     return (
@@ -57,7 +58,6 @@ export default function AirMeasurementsDashboard() {
                 endDate={endDate}
                 setStartDate={setStartDate}
                 setEndDate={setEndDate}
-                allParams={allParams}
                 selectedSeries={selectedSeries}
                 toggleSeries={toggleSeries}
                 loading={loading}
@@ -67,14 +67,9 @@ export default function AirMeasurementsDashboard() {
             <ChartView data={chartData} selectedSeries={selectedSeries} />
 
             <div style={{ marginTop: "20px" }}>
-                <RefreshButton onRefresh={handleAddMeasurement} />
+                <ReFetchButton onRefresh={handleAddMeasurement} />
                 <AddMeasurementForm onAdded={handleAddMeasurement} />
-
-                <MeasurementsTable
-                    filtered={filtered}
-                    totalItems={totalItems}
-                    setTotalItems={setTotalItems}
-                />
+                <MeasurementsTable filtered={filtered} totalItems={totalItems} setTotalItems={setTotalItems}/>
             </div>
         </div>
     );

@@ -1,17 +1,5 @@
 import { useState } from "react";
-
-const CITY_SENSOR_MAP = {
-    Warsaw: {
-        id: 10776,
-        sensors: {
-            35996: { parameter: "bc", unit: "µg/m³" },
-            36156: { parameter: "co", unit: "µg/m³" },
-            36160: { parameter: "no2", unit: "µg/m³" },
-            36161: { parameter: "pm10", unit: "µg/m³" },
-            36162: { parameter: "pm25", unit: "µg/m³" },
-        },
-    },
-};
+import {CITY_SENSOR_MAP} from "../../utils.js";
 
 const getSensorByParameter = (cityName, param) => {
     const city = CITY_SENSOR_MAP[cityName];
@@ -42,6 +30,7 @@ export default function AddMeasurementForm({ onAdded }) {
         }
 
         const sensorEntry = getSensorByParameter(city, parameter);
+        console.log(sensorEntry);
         if (!sensorEntry) {
             alert("Invalid parameter");
             return;

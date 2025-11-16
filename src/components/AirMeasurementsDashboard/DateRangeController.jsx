@@ -1,4 +1,4 @@
-import {formatDateInput} from "../../dateUtils.js";
+import {formatDateInput} from "../../utils.js";
 
 export default function DateRangeController({ start, end, setStart, setEnd, loading, error }) {
 

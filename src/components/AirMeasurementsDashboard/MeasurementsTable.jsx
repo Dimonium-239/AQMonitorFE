@@ -5,12 +5,10 @@ export default function MeasurementsTable({ filtered, totalItems, setTotalItems 
     const [pageNum, setPageNum] = useState(1);
     const [pageSize, setPageSize] = useState(10);
     const [sortConfig, setSortConfig] = useState({ key: "timestamp", direction: "desc" });
-    // Update total count whenever filtered changes
     useEffect(() => {
         setTotalItems(filtered.length);
     }, [filtered, setTotalItems]);
 
-    // Sort data
     const sorted = useMemo(() => {
         if (!sortConfig.key) return filtered;
 
@@ -18,7 +16,6 @@ export default function MeasurementsTable({ filtered, totalItems, setTotalItems 
             const valA = a[sortConfig.key];
             const valB = b[sortConfig.key];
 
-            // Handle timestamps and numbers correctly
             if (sortConfig.key === "timestamp") {
                 return sortConfig.direction === "asc"
                     ? new Date(valA) - new Date(valB)
@@ -35,7 +32,6 @@ export default function MeasurementsTable({ filtered, totalItems, setTotalItems 
         });
     }, [filtered, sortConfig]);
 
-    // Paginate data
     const paginated = useMemo(() => {
         const start = (pageNum - 1) * pageSize;
         const end = start + pageSize;
