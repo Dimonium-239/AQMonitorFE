@@ -13,20 +13,20 @@ const CITY_SENSOR_MAP = {
     },
 };
 
-const getSensorByParameter = (cityName, parameter) => {
+const getSensorByParameter = (cityName, param) => {
     const city = CITY_SENSOR_MAP[cityName];
     if (!city) return null;
-    return Object.entries(city.sensors).find(([id, data]) => data.parameter === parameter);
+    return Object.entries(city.sensors).find(([id, data]) => data.parameter === param);
 };
 
 export default function AddMeasurementForm({ onAdded }) {
-    const [city, setCity] = useState("Warsaw");
+    const [city] = useState("Warsaw");
     const [parameter, setParameter] = useState("");
     const [value, setValue] = useState("");
     const [unit, setUnit] = useState("");
     const [loading, setLoading] = useState(false);
 
-    const sensors = CITY_SENSOR_MAP[city]?.sensors || {};
+    const sensors = CITY_SENSOR_MAP[city].sensors;
 
     const handleParameterChange = (p) => {
         setParameter(p);
@@ -36,53 +36,55 @@ export default function AddMeasurementForm({ onAdded }) {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (!city || !parameter || !value) {
+        if (!parameter || !value) {
             alert("All fields are required");
             return;
         }
 
-        const [sensorId] = getSensorByParameter(city, parameter) || [];
-        if (!sensorId) {
+        const sensorEntry = getSensorByParameter(city, parameter);
+        if (!sensorEntry) {
             alert("Invalid parameter");
             return;
         }
 
+        const [sensor_id] = sensorEntry;
+        const params = new URLSearchParams({
+            city,
+            sensor_id,
+            value,
+        });
+
         try {
             setLoading(true);
 
-            const params = new URLSearchParams({
-                city,
-                sensor_id: sensorId,
-                value,
-            });
-
-            const res = await fetch(`https://aqmonitor.onrender.com/api/air/measurements?${params}`, {
-                method: "POST",
-            });
-
-            const rawText = await res.text();
-            console.log("Response status:", res.status);
-            console.log("Raw response text:", rawText);
+            const res = await fetch(
+                `https://chosen-noami-dimonium-239-f939ab63.koyeb.app/api/air/measurements?${params}`,
+                {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        city,
+                        sensor_id: parseInt(sensor_id),
+                        value: parseFloat(value)
+                    }),
+                }
+            );
 
             if (!res.ok) {
-                throw new Error(`Failed with status ${res.status}`);
+                const text = await res.text();
+                console.error("Error response:", text);
+                alert("Error while adding measurement");
+                return;
             }
 
-            // Safely parse JSON if it exists
-            let newMeasurement = null;
-            if (rawText) {
-                try {
-                    newMeasurement = JSON.parse(rawText);
-                } catch (err) {
-                    console.warn("Response was not valid JSON, ignoring parse error:", err);
-                }
-            }
+            // Notify parent to refresh data
+            onAdded();
 
-            if (newMeasurement) {
-                onAdded?.(newMeasurement);
-            }
-
+            // Reset form
+            setParameter("");
             setValue("");
+            setUnit("");
+
         } catch (err) {
             console.error("Error adding measurement:", err);
             alert("Error adding measurement");
@@ -104,11 +106,7 @@ export default function AddMeasurementForm({ onAdded }) {
             >
                 <label style={{ display: "flex", flexDirection: "column" }}>
                     City
-                    <input
-                        value={city}
-                        onChange={(e) => setCity(e.target.value)}
-                        style={{ width: "100px" }}
-                    />
+                    <input value={city} disabled style={{ width: "100px" }} />
                 </label>
 
                 <label style={{ display: "flex", flexDirection: "column" }}>
@@ -152,4 +150,3 @@ export default function AddMeasurementForm({ onAdded }) {
         </div>
     );
 }
-

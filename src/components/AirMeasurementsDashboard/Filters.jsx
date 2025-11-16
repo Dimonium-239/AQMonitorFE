@@ -1,38 +1,31 @@
 import React from 'react';
+import DateRangeController from "./DateRangeController.jsx";
 
-export default function Filters({startDate,
+export default function Filters({
+                                    startDate,
                                     endDate,
                                     setStartDate,
                                     setEndDate,
-                                    handleFilter,
                                     allParams,
                                     selectedSeries,
-                                    toggleSeries }) {
+                                    toggleSeries,
+                                    loading,
+                                    error
+                                }) {
+    const toStartOfDay = (dateStr) => {
+        if (!dateStr) return null;
+        return new Date(dateStr);
+    };
+
+    const toEndOfDay = (dateStr) => {
+        if (!dateStr) return null;
+        return new Date(dateStr);
+    };
+
     return (
         <div style={{ marginBottom: '10px' }}>
             <div style={{ marginBottom: '10px' }}>
-                <label>Start date: </label>
-                <input
-                    type="date"
-                    value={startDate}
-                    onChange={e => {
-                        const val = e.target.value;
-                        setStartDate(val);
-                        handleFilter(val, endDate);
-                    }}
-                />
-
-                <label style={{ marginLeft: '10px' }}>End date: </label>
-                <input
-                    type="date"
-                    value={endDate}
-                    onChange={e => {
-                        const val = e.target.value;
-                        setEndDate(val);
-                        handleFilter(startDate, val);
-                    }}
-                />
-            </div>
+            <DateRangeController start={toStartOfDay(startDate)} end={toEndOfDay(endDate)} setStart={setStartDate} setEnd={setEndDate} loading={loading} error={error} />
 
             <div>
                 <span>Show series:</span>
@@ -47,5 +40,6 @@ export default function Filters({startDate,
                 ))}
             </div>
         </div>
+    </div>
     );
 }

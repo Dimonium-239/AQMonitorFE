@@ -1,96 +1,136 @@
-import {useState, useEffect, useMemo} from 'react';
+import { useState, useEffect, useMemo } from "react";
 
-export default function useAirMeasurements(initialPage = 1, initialSize = 10) {
-    const [measurements, setMeasurements] = useState([]);
-    const [chartData, setChartData] = useState([]);
+export default function useAirMeasurements(startDate, endDate, refreshKey, {
+    initialPage = 1,
+    initialSize = 10
+} = {}) {
+
+    // Pagination
     const [pageNum, setPageNum] = useState(initialPage);
     const [pageSize, setPageSize] = useState(initialSize);
-    const [totalPages, setTotalPages] = useState(1);
-    const [startDate, setStartDate] = useState('');
-    const [endDate, setEndDate] = useState('');
+
+    // Data
+    const [rawData, setRawData] = useState([]);
+    const [chartData, setChartData] = useState([]);
+
+    // Filters
     const [selectedSeries, setSelectedSeries] = useState([]);
     const [allParams, setAllParams] = useState([]);
-    const [sortBy, setSortBy] = useState(["timestamp:asc"]); // multi-sort support
+    const [sortBy, setSortBy] = useState(["timestamp:asc"]);
+
+    // UI state
     const [totalItems, setTotalItems] = useState(0);
+    const [totalPages, setTotalPages] = useState(1);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null);
 
-    useEffect(() => {
-        const maxPages = Math.max(1, totalPages);
-        if (pageNum > maxPages) setPageNum(maxPages);
-    }, [pageNum, pageSize, totalPages]);
 
-    // Fetch chart data (main backend endpoint)
+    // MAIN FETCH
     useEffect(() => {
         let isMounted = true;
+
         const params = new URLSearchParams();
 
         if (startDate) params.append("start_date", startDate);
         if (endDate) params.append("end_date", endDate);
-        if (selectedSeries.length > 0) {
-            selectedSeries.forEach(p => params.append("parameter", p));
-        }
-        if (sortBy.length > 0) {
-            sortBy.forEach(s => params.append("sort_by", s));
-        }
+        selectedSeries.forEach(p => params.append("parameter", p));
+        sortBy.forEach(rule => params.append("sort_by", rule));
 
-        const chartUrl = `https://aqmonitor.onrender.com/api/air/measurements/chart-data?${params.toString()}`;
-        console.log("Fetching:", chartUrl);
+        const url = `https://chosen-noami-dimonium-239-f939ab63.koyeb.app/api/air/measurements/chart-data?${params}`;
 
-        fetch(chartUrl)
-            .then(res => res.json())
+        setLoading(true);
+        setError(null);
+
+        fetch(url)
+            .then(res => {
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                return res.json();
+            })
             .then(data => {
                 if (!isMounted) return;
+
+                setRawData(data || []);
                 setChartData(data || []);
 
                 const total = data.length;
                 setTotalItems(total);
-                const pages = Math.ceil(total / pageSize);
-                setTotalPages(pages);
-                setMeasurements(data);
+                setTotalPages(Math.max(1, Math.ceil(total / pageSize)));
+                setLoading(false);
             })
-            .catch(console.error);
+            .catch(err => {
+                if (!isMounted) return;
+                setError(err.message || "Failed to fetch data");
+                setLoading(false);
+            });
 
         return () => { isMounted = false; };
-    }, [pageNum, pageSize, startDate, endDate, selectedSeries, sortBy]);
+    }, [
+        startDate,
+        endDate,
+        selectedSeries,
+        sortBy,
+        pageSize,
+        refreshKey // ← crucial
+    ]);
 
-    // Extract available parameters dynamically
+
+    // ENFORCE VALID PAGE NUMBER
     useEffect(() => {
-        const paramsFromData = new Set(chartData.map(m => m.parameter));
-        setAllParams(prev => [...new Set([...prev, ...paramsFromData])]);
-    }, [chartData]);
+        if (pageNum > totalPages) {
+            setPageNum(totalPages);
+        }
+    }, [pageNum, totalPages]);
 
-    // Filter by date locally (optional — if needed)
+
+    // EXTRACT PARAMETER LIST
+    useEffect(() => {
+        const params = new Set(rawData.map(m => m.parameter));
+        setAllParams([...params]);
+    }, [rawData]);
+
+
+    // LOCAL FILTERING (based on date)
     const filtered = useMemo(() => {
-        if (!startDate || !endDate) return measurements;
+        if (!startDate || !endDate) return rawData;
+
         const start = new Date(startDate);
-        start.setHours(0,0,0,0);
+        start.setHours(0, 0, 0, 0);
+
         const end = new Date(endDate);
-        end.setHours(23,59,59,999);
-        return measurements.filter(m => {
+        end.setHours(23, 59, 59, 999);
+
+        return rawData.filter(m => {
             const t = new Date(m.timestamp);
             return t >= start && t <= end;
         });
-    }, [measurements, startDate, endDate]);
+    }, [rawData, startDate, endDate]);
+
+
     return {
-        measurements,
-        filtered,
+        // data
         chartData,
+        filtered,
+
+        // parameters
         allParams,
+        selectedSeries,
+        setSelectedSeries,
+
+        // pagination
         pageNum,
         setPageNum,
         pageSize,
         setPageSize,
         totalPages,
-        startDate,
-        setStartDate,
-        endDate,
-        setEndDate,
-        selectedSeries,
-        setSelectedSeries,
+
+        // sorting
         sortBy,
         setSortBy,
-        setChartData,
-        setMeasurements,
+
+        // UI state
         totalItems,
-        setTotalItems
+        setTotalItems,
+        loading,
+        error
     };
 }

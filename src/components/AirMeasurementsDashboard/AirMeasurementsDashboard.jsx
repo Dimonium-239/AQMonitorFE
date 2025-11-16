@@ -1,43 +1,43 @@
-import React, { useEffect } from "react";
-import Filters from "./Filters";
-import ChartView from "./ChartView";
-import AddMeasurementForm from "./AddMeasurementForm";
-import MeasurementsTable from "./MeasurementsTable";
+import {formatDateInput} from "../../dateUtils.js";
+import {useMemo, useState} from "react";
 import useAirMeasurements from "../../hooks/useAirMeasurements.js";
+import Filters from "./Filters.jsx";
+import ChartView from "./ChartView.jsx";
+import RefreshButton from "./ReFetchButton.jsx";
+import AddMeasurementForm from "./AddMeasurementForm.jsx";
+import MeasurementsTable from "./MeasurementsTable.jsx";
 
 export default function AirMeasurementsDashboard() {
+    const [refreshKey, setRefreshKey] = useState(0);
+
+    const { nowNorm, pastNorm } = useMemo(() => {
+        const now = new Date();
+        const past = new Date();
+        past.setDate(past.getDate() - 7);
+
+        return {
+            nowNorm: formatDateInput(now),
+            pastNorm: formatDateInput(past)
+        };
+    }, []);
+
+    const [startDate, setStartDate] = useState(pastNorm);
+    const [endDate, setEndDate] = useState(nowNorm);
+
     const {
-        measurements,
         filtered,
         chartData,
         allParams,
-        startDate,
-        setStartDate,
-        endDate,
-        setEndDate,
         selectedSeries,
         setSelectedSeries,
-        setMeasurements,
-        setChartData,
         totalItems,
-        setTotalItems
-    } = useAirMeasurements();
+        setTotalItems,
+        loading,
+        error
+    } = useAirMeasurements(startDate, endDate, refreshKey);
 
-    // Initialize default date range and series on first load
-    useEffect(() => {
-        if (measurements.length > 0 && !startDate && !endDate && selectedSeries.length === 0) {
-            const now = new Date();
-            const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-            setStartDate(weekAgo.toISOString().split('T')[0]);
-            setEndDate(now.toISOString().split('T')[0]);
-            setSelectedSeries(allParams);
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [measurements, allParams]);
-
-    const handleFilter = (s, e) => {
-        setStartDate(s.toISOString().split('T')[0]);
-        setEndDate(e.toISOString().split('T')[0]);
+    const handleAddMeasurement = () => {
+        setRefreshKey(k => k + 1); // trigger re-fetch
     };
 
     const toggleSeries = (param) => {
@@ -46,11 +46,6 @@ export default function AirMeasurementsDashboard() {
                 ? prev.filter(s => s !== param)
                 : [...prev, param]
         );
-    };
-
-    const handleAdded = (newMeasurement) => {
-        setChartData((prev) => [...prev, newMeasurement]);
-        setMeasurements((prev) => [...prev, newMeasurement]);
     };
 
     return (
@@ -62,13 +57,19 @@ export default function AirMeasurementsDashboard() {
                 endDate={endDate}
                 setStartDate={setStartDate}
                 setEndDate={setEndDate}
-                handleFilter={handleFilter}
                 allParams={allParams}
                 selectedSeries={selectedSeries}
-                toggleSeries={toggleSeries}/>
+                toggleSeries={toggleSeries}
+                loading={loading}
+                error={error}
+            />
+
             <ChartView data={chartData} selectedSeries={selectedSeries} />
+
             <div style={{ marginTop: "20px" }}>
-                <AddMeasurementForm onAdded={handleAdded} />
+                <RefreshButton onRefresh={handleAddMeasurement} />
+                <AddMeasurementForm onAdded={handleAddMeasurement} />
+
                 <MeasurementsTable
                     filtered={filtered}
                     totalItems={totalItems}

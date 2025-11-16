@@ -29,7 +29,6 @@ function stringToColor(str) {
 
 export default function ChartView({ data, selectedSeries }) {
     const chartData = pivotData(data);
-    // Derive unique parameters from the data if none selected
     const allParams =
         selectedSeries.length > 0
             ? selectedSeries
