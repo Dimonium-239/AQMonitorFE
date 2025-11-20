@@ -30,7 +30,6 @@ export default function AddMeasurementForm({ onAdded }) {
         }
 
         const sensorEntry = getSensorByParameter(city, parameter);
-        console.log(sensorEntry);
         if (!sensorEntry) {
             alert("Invalid parameter");
             return;

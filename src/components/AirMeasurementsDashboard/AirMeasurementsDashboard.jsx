@@ -69,7 +69,7 @@ export default function AirMeasurementsDashboard() {
             <div style={{ marginTop: "20px" }}>
                 <ReFetchButton class="no-print" onRefresh={handleAddMeasurement} />
                 <AddMeasurementForm class="no-print" onAdded={handleAddMeasurement} />
-                <MeasurementsTable filtered={filtered} totalItems={totalItems} setTotalItems={setTotalItems}/>
+                <MeasurementsTable filtered={filtered} totalItems={totalItems} setTotalItems={setTotalItems} onEdit={handleAddMeasurement} />
             </div>
         </div>
     );
