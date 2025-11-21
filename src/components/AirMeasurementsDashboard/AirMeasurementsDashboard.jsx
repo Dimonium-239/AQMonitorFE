@@ -52,6 +52,7 @@ export default function AirMeasurementsDashboard() {
     return (
         <div style={{ padding: '20px', fontFamily: 'Arial, sans-serif' }}>
             <h2>Air Quality Dashboard</h2>
+            <h3>Warsaw</h3>
 
             <Filters
                 startDate={startDate}

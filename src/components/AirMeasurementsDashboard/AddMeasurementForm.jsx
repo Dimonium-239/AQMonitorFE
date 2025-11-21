@@ -65,10 +65,8 @@ export default function AddMeasurementForm({ onAdded }) {
                 return;
             }
 
-            // Notify parent to refresh data
             onAdded();
 
-            // Reset form
             setParameter("");
             setValue("");
             setUnit("");
@@ -85,12 +83,7 @@ export default function AddMeasurementForm({ onAdded }) {
         <div className={"no-print"} style={{ marginBottom: "25px" }}>
             <form
                 onSubmit={handleSubmit}
-                style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "10px",
-                    flexWrap: "wrap",
-                }}
+                className={"responsive-form"}
             >
                 <label style={{ display: "flex", flexDirection: "column" }}>
                     City
@@ -116,10 +109,14 @@ export default function AddMeasurementForm({ onAdded }) {
                 <label style={{ display: "flex", flexDirection: "column" }}>
                     Value
                     <input
-                        type="number"
-                        step="0.1"
+                        type="text"
                         value={value}
-                        onChange={(e) => setValue(e.target.value)}
+                        onChange={(e) => {
+                            const v = e.target.value;
+                            if (/^\d*\.?\d*$/.test(v)) {
+                                setValue(v);
+                            }
+                        }}
                         style={{ width: "70px" }}
                     />
                 </label>

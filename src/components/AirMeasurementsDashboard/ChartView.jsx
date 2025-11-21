@@ -41,10 +41,13 @@ export default function ChartView({ data, selectedSeries }) {
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis
                         dataKey="timestamp"
-                        tickFormatter={t => new Date(t).toLocaleTimeString()}
+                        tickFormatter={t => new Date(t).toLocaleDateString()}
                     />
-                    <YAxis />
-                    <Tooltip />
+                    <YAxis scale={"sqrt"} />
+                    <Tooltip
+                        labelFormatter={label => `Time: ${new Date(label).toLocaleString()}`}
+                        formatter={(value, name) => [`${value}`, name]}
+                    />
                     <Legend />
                     {allParams.map(param => (
                         <Line
@@ -52,7 +55,7 @@ export default function ChartView({ data, selectedSeries }) {
                             type="monotone"
                             dataKey={param}
                             stroke={stringToColor(param)}
-                            dot={true}
+                            dot={false}
                         />
                     ))}
                 </LineChart>

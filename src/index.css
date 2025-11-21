@@ -89,3 +89,17 @@ button:focus-visible {
     }
 }
 
+.responsive-form {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    flex-direction: row;
+}
+
+@media (max-width: 600px) {
+    .responsive-form {
+        flex-direction: column;
+        justify-content: center;
+    }
+}
